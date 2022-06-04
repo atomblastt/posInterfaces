@@ -11,17 +11,21 @@
           <!-- App favicon -->
           <link rel="shortcut icon" href="<?=base_url('assets/template/')?>brg.png">
 
+          <!-- third party css -->
+          <link href="<?=base_url('assets/template/dist/')?>assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+          <link href="<?=base_url('assets/template/dist/')?>assets/libs/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+          <link href="<?=base_url('assets/template/dist/')?>assets/libs/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+          <link href="<?=base_url('assets/template/dist/')?>assets/libs/datatables.net-select-bs5/css//select.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+          <!-- third party css end -->
+
           <!-- Plugins -->
+          <link href="<?=base_url('assets/template/dist/')?>assets/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css" />
           <link href="<?=base_url('assets/template/dist/')?>assets/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
           <link href="<?=base_url('assets/template/dist/')?>assets/libs/quill/quill.core.css" rel="stylesheet" type="text/css" />
           <link href="<?=base_url('assets/template/dist/')?>assets/libs/quill/quill.bubble.css" rel="stylesheet" type="text/css" />
           <link href="<?=base_url('assets/template/dist/')?>assets/libs/quill/quill.snow.css" rel="stylesheet" type="text/css" />
           <link href="<?=base_url('assets/template/dist/')?>assets/libs/dropzone/min/dropzone.min.css" rel="stylesheet" type="text/css" />
           <link href="<?=base_url('assets/template/dist/')?>assets/libs/dropify/css/dropify.min.css" rel="stylesheet" type="text/css" />
-
-          <link href="http://hayageek.github.io/jQuery-Upload-File/4.0.11/uploadfile.css" rel="stylesheet">
-          <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-          <script src="http://hayageek.github.io/jQuery-Upload-File/4.0.11/jquery.uploadfile.min.js"></script>
 
                <!-- App css -->
           <link href="<?=base_url('assets/template/dist/')?>assets/css/config/default/bootstrap.min.css" rel="stylesheet" type="text/css" id="bs-default-stylesheet" disabled="disabled" />

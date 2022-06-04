@@ -6,9 +6,14 @@
 	}
 
 
-    function sendCurl($path, $data){
+    function sendCurl($path, $method, $data=""){
         if (!function_exists('curl_init')) {
             die('Sorry cURL is not installed!');
+        }
+        if (empty($data)) {
+            $body = $data;
+        }else{
+            $body = http_build_query($data);
         }
 
         $url = "http://localhost/posApi".$path;
@@ -17,7 +22,8 @@
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);

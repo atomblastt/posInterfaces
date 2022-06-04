@@ -3,8 +3,7 @@
       <div class="card">
           <div class="card-body">
             <?php 
-            echo validation_errors('<div class="alert alert-warning">','</div>');
-
+            
             // form open
             echo form_open(base_url('admin/kategori/tambah'),' class="form-horizontal"');
             ?>

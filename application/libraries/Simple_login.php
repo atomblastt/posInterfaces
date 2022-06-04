@@ -13,13 +13,10 @@ class Simple_login
 	// fungsi login user
 	public function login($data)
 	{
-		$check = sendCurl('/login',$data);
+		$check = sendCurl('/login','POST',$data);
 		$check = json_decode($check);
 		if ($check->status == '00') {
 			$check = $check->data[0];
-		}
-		// jika ada data user, maka buat session loginnya
-		if ($check->status == '00') {
 			$user_id		=	$check->user_id;
 			$name			=	$check->name;
 			$username		=	$check->username;
