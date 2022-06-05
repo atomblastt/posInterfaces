@@ -19,162 +19,108 @@ class Produk extends CI_Controller {
 	// data produk
 	public function index()
 	{
-		// $produk = $this->produk_model->listing();
+		$produk 	= sendCurl('/product','GET');
+		$produk 	= json_decode($produk);
+		$produk 	= $produk->data;
 		// $site 					=	$this->konfigurasi_model->listing();
-
+		// print_r($produk);
+		// die();
 		$data = array(	'title' => 'Data Produk' ,
-						// 'produk' 	=> $produk ,
+						'produk' 	=> $produk ,
 						// 'site' 	=> $site ,
 						'isi' 	=> 'admin/produk/list'
 						);	
 		$this->load->view('admin/layout/wrapper', $data, FALSE);
 	}
 
-	// gambar
-	public function gambar($id_produk)
+	public function ajaxAllData()
 	{
-		$produk 	=	$this->produk_model->detail($id_produk);
-		$gambar 	=	$this->produk_model->gambar($id_produk);
-
-		// validasi tambah
-		$valid = $this->form_validation;
-
-		$valid->set_rules('judul_gambar','Judul / Nama Gambar','required',
-			array( 	'required'		=> '%s harus diisi'));
-
-		if ($valid->run()) {
-			$config['upload_path'] 		= './assets/upload/image/';
-			$config['allowed_types']	= 'gif|jpg|png|jpeg';
-			$config['max_size']  		= '2400'; //dalam KB
-			$config['max_width']  		= '2024';
-			$config['max_height']  		= '2024';
-			
-			$this->load->library('upload', $config);
-			if (! $this->upload->do_upload('gambar')){
-			// end validasi
-
-		$data = array(	'title' 	=> 'Tambah Gambar Produk:	'.$produk->nama_produk,
-						'produk' 	=> $produk,
-						'gambar' 	=> $gambar,
-						'error'		=> $this->upload->display_errors(),
-						'isi' 		=> 'admin/produk/gambar'
-						);	
-		$this->load->view('admin/layout/wrapper', $data, FALSE);
-		// masuk Database
-			}else{
-				$upload_gambar = array('upload_data' => $this->upload->data());
-				// membuat thumbnail gambar
-						$config['image_library'] 	= 'gd2';
-						$config['source_image'] 	= './assets/upload/image/'.$upload_gambar['upload_data']['file_name'];
-						// loakasi folder thumbnail
-						$config['new_image']		= './assets/upload/image/thumbs/';
-						$config['create_thumb'] 	= TRUE;
-						$config['maintain_ratio'] 	= TRUE;
-						$config['width']         	= 1000;//pixel
-						$config['height']       	= 1000;
-						$config['thumb_marker']		= '';
-
-						$this->load->library('image_lib', $config);
-
-						$this->image_lib->resize();
-				// end membuat thumbnail gambar
-				$i= $this->input;
-				$data = array(	'id_produk'			=>	$id_produk,
-								'judul_gambar'		=>	$i->post('judul_gambar'),
-								'gambar'			=>	$upload_gambar['upload_data']['file_name']
-							);
-				$this->produk_model->tambah_gambar($data);
-				$this->session->set_flashdata('sukses', 'Data Gambar Berhasil Di tambahkan');
-				redirect(base_url('admin/produk/gambar/'	.$id_produk),'refresh');
-		}}
-		// end masuk database
-		$data = array(	'title' 	=> 'Tambah Gambar Produk:	'.$produk->nama_produk,
-						'produk' 	=> $produk,
-						'gambar' 	=> $gambar,
-						'isi' 		=> 'admin/produk/gambar'
-						);	
-		$this->load->view('admin/layout/wrapper', $data, FALSE);
-
+		$sendApi 	= sendCurl('/product','GET');
+		$sendApi 	= json_decode($sendApi);
+		$sendApi 	= $sendApi->data;
+		$count = count($sendApi);
+		// print_r($count);
+		// die();
+		$result = array();
+		// $no = 1;
+		foreach ($sendApi as $key => $val) {
+			$result[] = $val;
+		}
+		$array = array
+			(
+				"draw" => $_POST['draw'],
+				"recordsTotal" => $count,
+				"recordsFiltered" => $count,
+				"data" => $result,
+			);
+		echo json_encode($array);
 	}
 
 	// Tambah produk
 	public function tambah()
 	{
-		// Memanggil data join kategori dari database
-		// $kategori = $this->kategori_model->listing();
-		// $site = $this->konfigurasi_model->listing();
-		// // validasi tambah
-		// $valid = $this->form_validation;
+		$kategori 	= sendCurl('/category','GET');
+		$kategori 	= json_decode($kategori);
+		$kategori 	= $kategori->data;
 
-		// $valid->set_rules('nama_produk','Nama Produk','required',
-		// 	array( 	'required'		=> '%s harus diisi'));
+		// validasi tambah
+		$valid = $this->form_validation;
 
-		// $valid->set_rules('kode_produk','Kode Produk','required|is_unique[produk.kode_produk]',		
-		// 	array( 	'required'		=> 	'%s harus diisi',
-		// 			'is_unique'		=>	'%s Data Sudah Ada, Masukan Data Produk Baru'));
+		$valid->set_rules('nama_produk','Nama Produk','required',
+			array( 	'required'		=> '%s harus diisi'));
+
+		$valid->set_rules('kode_produk','Kode Produk','required',		
+			array( 	'required'		=> 	'%s harus diisi'));
 		
-		// if ($valid->run()) {
-		// 	$config['upload_path'] 		= './assets/upload/image/';
-		// 	$config['allowed_types']	= 'gif|jpg|png|jpeg';
-		// 	$config['max_size']  		= '2400'; //dalam KB
-		// 	$config['max_width']  		= '2024';
-		// 	$config['max_height']  		= '2024';
+		if ($valid->run()) {
+			$nmfile = "file_".time();
+			$config['upload_path'] 		= './assets/upload/image/';
+			$config['allowed_types']	= 'gif|jpg|png|jpeg';
+			$config['max_size']  		= '2400'; //dalam KB
+			$config['max_width']  		= '2024';
+			$config['max_height']  		= '2024';
+			$config['file_name'] 		= $nmfile;
 			
-		// 	$this->load->library('upload', $config);
-		// 	if (! $this->upload->do_upload('gambar')){
-		// 	// end validasi
+			$this->load->library('upload', $config);
+			if (! $this->upload->do_upload('gambar')){
+			// end validasi
 
-		// $data = array(	'title' 	=> 'Tambah Produk' ,
-		// 				'kategori' 	=> $kategori,
-		// 				'site' 		=> $site ,
-		// 				'error'		=> $this->upload->display_errors(),
-		// 				'isi' 		=> 'admin/produk/tambah'
-		// 				);	
-		// $this->load->view('admin/layout/wrapper', $data, FALSE);
-		// // masuk Database
-		// 	}else{
-		// 		$upload_gambar = array('upload_data' => $this->upload->data());
-		// 		// membuat thumbnail gambar
-		// 				$config['image_library'] 	= 'gd2';
-		// 				$config['source_image'] 	= './assets/upload/image/'.$upload_gambar['upload_data']['file_name'];
-		// 				// loakasi folder thumbnail
-		// 				$config['new_image']		= './assets/upload/image/thumbs/';
-		// 				$config['create_thumb'] 	= TRUE;
-		// 				$config['maintain_ratio'] 	= TRUE;
-		// 				$config['width']         	= 1000;//pixel
-		// 				$config['height']       	= 1000;
-		// 				$config['thumb_marker']		= '';
-
-		// 				$this->load->library('image_lib', $config);
-
-		// 				$this->image_lib->resize();
-		// 		// end membuat thumbnail gambar
-		// 		$i= $this->input;
-		// 		// slug produk
-		// 		$slug_produk = url_title($this->input->post('nama_produk').'_'.$this->input->post('kode_produk'), 'dash', TRUE);
-		// 		$data = array(	'id_user'			=>	$this->session->userdata('id_user'),
-		// 						'id_kategori'		=>	$i->post('id_kategori'),
-		// 						'kode_produk'		=>	$i->post('kode_produk'),
-		// 						'nama_produk'		=>	$i->post('nama_produk'),
-		// 						'slug_produk'		=>	$slug_produk,
-		// 						'keterangan'		=>	$i->post('keterangan'),
-		// 						'keywords'			=>	$i->post('keywords'),
-		// 						'harga'				=>	$i->post('harga'),
-		// 						'stok'				=>	$i->post('stok'),
-		// 						'gambar'			=>	$upload_gambar['upload_data']['file_name'],
-		// 						'berat'				=>	$i->post('berat'),
-		// 						'ukuran'			=>	$i->post('ukuran'),
-		// 						'status_produk'		=>	$i->post('status_produk'),
-		// 						'tanggal_post'		=>	date('Y-m-d H:i:s')
-		// 					);
-		// 		$this->produk_model->tambah($data);
-		// 		$this->session->set_flashdata('sukses', 'Data Berhasil Di Simpan');
-		// 		redirect(base_url('admin/produk'),'refresh');
-		// }}
+		$data = array(	'title' 	=> 'Tambah Produk' ,
+						'kategori' 	=> $kategori,
+						'error'		=> $this->upload->display_errors(),
+						'isi' 		=> 'admin/produk/tambah'
+						);	
+		$this->load->view('admin/layout/wrapper', $data, FALSE);
+		// masuk Database
+		}else{
+			$upload_gambar = array('upload_data' => $this->upload->data());
+			$i= $this->input;
+			$data = array(	'id_user'			=>	$this->session->userdata('user_id'),
+							'id_kategori'		=>	$i->post('id_kategori'),
+							'kode_produk'		=>	$i->post('kode_produk'),
+							'nama_produk'		=>	$i->post('nama_produk'),
+							'keterangan'		=>	$i->post('keterangan'),
+							'harga'				=>	$i->post('harga'),
+							'stok'				=>	$i->post('stok'),
+							'gambar'			=>	$upload_gambar['upload_data']['file_name'],
+							'status_produk'		=>	$i->post('status_produk'),
+							'tanggal_post'		=>	date('Y-m-d H:i:s')
+						);
+			$sendApi 	= sendCurl('/product/add','POST',$data);
+			$sendApi 	= json_decode($sendApi);
+			// print_r($data);
+			// die();
+			if ($sendApi->status == '00') {
+				$this->session->set_flashdata('sukses', 'Data Berhasil Di Simpan');
+			}else{
+				$this->session->set_flashdata('warning', 'Insert Gagal - '.$sendApi->message);
+			}
+			// die();
+			redirect(base_url('admin/produk'),'refresh');
+		}}
 		// end masuk database
 		$data = array(	'title' 	=> 'Tambah Produk',
-						// 'kategori' 	=> $kategori,
-						// 'site' 		=> $site,
+						'kategori' 	=> $kategori,
 						'isi' 		=> 'admin/produk/tambah'
 						);	
 		$this->load->view('admin/layout/wrapper', $data, FALSE);
@@ -183,10 +129,22 @@ class Produk extends CI_Controller {
 	public function edit($id_produk)
 	{
 		// ambil data produk yang akan di edit
-		$produk 	=	$this->produk_model->detail($id_produk);
-		$site = $this->konfigurasi_model->listing();
-		// Memanggil data join kategori dari database
-		$kategori 	= 	$this->kategori_model->listing();
+		$kategori 	= sendCurl('/category','GET');
+		$kategori 	= json_decode($kategori);
+		$kategori 	= $kategori->data;
+		
+		$dataPro = array('id_produk' => $id_produk);
+		$produk = sendCurl('/product/detail','POST', $dataPro);
+		$produk 	= json_decode($produk);
+		$produk 	= $produk->data[0];
+
+		// print_r($produk);
+		// die();
+		if ($this->input->post('keterangan') == "") {
+			$keterangan = $produk->description;
+		}else{
+			$keterangan = $this->input->post('keterangan');
+		}
 		// validasi tambah
 		$valid 		= 	$this->form_validation;
 
@@ -198,94 +156,84 @@ class Produk extends CI_Controller {
 		if ($valid->run()) {
 			// cek jika gambar diganti
 			if(!empty($_FILES['gambar']['name'])){
+				$nmfile = "file_".time();
+				$config['upload_path'] 		= './assets/upload/image/';
+				$config['allowed_types']	= 'gif|jpg|png|jpeg';
+				$config['max_size']  		= '2400'; //dalam KB
+				$config['max_width']  		= '2024';
+				$config['max_height']  		= '2024';
+				$config['file_name'] 		= $nmfile;
+				
+				$this->load->library('upload', $config);
+				if (! $this->upload->do_upload('gambar')){
+				// end validasi
 
-			$config['upload_path'] 		= './assets/upload/image/';
-			$config['allowed_types']	= 'gif|jpg|png|jpeg';
-			$config['max_size']  		= '2400'; //dalam KB
-			$config['max_width']  		= '2024';
-			$config['max_height']  		= '2024';
-			
-			$this->load->library('upload', $config);
-			if (! $this->upload->do_upload('gambar')){
-			// end validasi
-
-		$data = array(	'title' 	=> 'Edit Produk:	'.$produk->nama_produk ,
-						'kategori' 	=> $kategori,
-						'produk'	=> $produk,
-						'site'	=> $site,
-						'error'		=> $this->upload->display_errors(),
-						'isi' 		=> 'admin/produk/edit'
-						);	
-		$this->load->view('admin/layout/wrapper', $data, FALSE);
-		// masuk Database
+				$data = array(	'title' 	=> 'Edit Produk:	'.$produk->nama_produk ,
+								'kategori' 	=> $kategori,
+								'produk'	=> $produk,
+								'error'		=> $this->upload->display_errors(),
+								'isi' 		=> 'admin/produk/edit'
+								);	
+				$this->load->view('admin/layout/wrapper', $data, FALSE);
+				// masuk Database
+				}else{
+					$upload_gambar = array('upload_data' => $this->upload->data());
+					$i= $this->input;
+					// slug produkx
+					$slug_produk = url_title($this->input->post('nama_produk').'_'.$this->input->post('kode_produk'), 'dash', TRUE);
+					$data = array(	'id_produk'			=>	$id_produk,
+									'id_kategori'		=>	$i->post('id_kategori'),
+									'kode_produk'		=>	$i->post('kode_produk'),
+									'nama_produk'		=>	$i->post('nama_produk'),
+									'keterangan'		=>	$keterangan,
+									'harga'				=>	$i->post('harga'),
+									'stok'				=>	$i->post('stok'),
+									'gambar'			=>	$upload_gambar['upload_data']['file_name'],
+									'status_produk'		=>	$i->post('status_produk'),
+									'tanggal_post'		=>	date('Y-m-d H:i:s')
+								);
+					$sendApi 	= sendCurl('/product/edit','POST',$data);
+					$sendApi 	= json_decode($sendApi);
+					// print_r($sendApi);
+					// die();
+					if ($sendApi->status == '00') {
+						$this->session->set_flashdata('sukses', 'Data Berhasil Di Simpan');
+					}else{
+						$this->session->set_flashdata('warning', 'Update Gagal - '.$sendApi->message);
+					}
+					redirect(base_url('admin/produk'),'refresh');
+				}
 			}else{
-				$upload_gambar = array('upload_data' => $this->upload->data());
-				// membuat thumbnail gambar
-						$config['image_library'] 	= 'gd2';
-						$config['source_image'] 	= './assets/upload/image/'.$upload_gambar['upload_data']['file_name'];
-						// loakasi folder thumbnail
-						$config['new_image']		= './assets/upload/image/thumbs/';
-						$config['create_thumb'] 	= TRUE;
-						$config['maintain_ratio'] 	= TRUE;
-						$config['width']         	= 1000;//pixel
-						$config['height']       	= 1000;
-						$config['thumb_marker']		= '';
-
-						$this->load->library('image_lib', $config);
-
-						$this->image_lib->resize();
-				// end membuat thumbnail gambar
-				$i= $this->input;
-				// slug produkx
-				$slug_produk = url_title($this->input->post('nama_produk').'_'.$this->input->post('kode_produk'), 'dash', TRUE);
-				$data = array(	'id_produk'			=>	$id_produk,
-								'id_user'			=>	$this->session->userdata('id_user'),
-								'id_kategori'		=>	$i->post('id_kategori'),
-								'kode_produk'		=>	$i->post('kode_produk'),
-								'nama_produk'		=>	$i->post('nama_produk'),
-								'slug_produk'		=>	$slug_produk,
-								'keterangan'		=>	$i->post('keterangan'),
-								'keywords'			=>	$i->post('keywords'),
-								'harga'				=>	$i->post('harga'),
-								'stok'				=>	$i->post('stok'),
-								'gambar'			=>	$upload_gambar['upload_data']['file_name'],
-								'berat'				=>	$i->post('berat'),
-								'ukuran'			=>	$i->post('ukuran'),
-								'status_produk'		=>	$i->post('status_produk')
-							);
-				$this->produk_model->edit($data);
-				$this->session->set_flashdata('sukses', 'Data Berhasil Di Edit');
-				redirect(base_url('admin/produk'),'refresh');
-		}}else{
-			// edit Produk Tanpa Ganti Gambar
-			// end membuat thumbnail gambar
 				$i= $this->input;
 				// slug produk
 				$slug_produk = url_title($this->input->post('nama_produk').'_'.$this->input->post('kode_produk'), 'dash', TRUE);
 				$data = array(	'id_produk'			=>	$id_produk,
-								'id_user'			=>	$this->session->userdata('id_user'),
 								'id_kategori'		=>	$i->post('id_kategori'),
 								'kode_produk'		=>	$i->post('kode_produk'),
 								'nama_produk'		=>	$i->post('nama_produk'),
-								'slug_produk'		=>	$slug_produk,
-								'keterangan'		=>	$i->post('keterangan'),
-								'keywords'			=>	$i->post('keywords'),
+								'keterangan'		=>	$keterangan,
 								'harga'				=>	$i->post('harga'),
 								'stok'				=>	$i->post('stok'),
 								// 'gambar'			=>	$upload_gambar['upload_data']['file_name'],
-								'berat'				=>	$i->post('berat'),
-								'ukuran'			=>	$i->post('ukuran'),
-								'status_produk'		=>	$i->post('status_produk')
+								'status_produk'		=>	$i->post('status_produk'),
+								'tanggal_post'		=>	date('Y-m-d H:i:s')
 							);
-				$this->produk_model->edit($data);
-				$this->session->set_flashdata('sukses', 'Data Berhasil Di Edit');
+				$sendApi 	= sendCurl('/product/edit','POST',$data);
+				$sendApi 	= json_decode($sendApi);
+				// print_r($data);
+				// die();
+				if ($sendApi->status == '00') {
+					$this->session->set_flashdata('sukses', 'Data Berhasil Di Simpan');
+				}else{
+					$this->session->set_flashdata('warning', 'Update Gagal - '.$sendApi->message);
+				}
+				// die();
 				redirect(base_url('admin/produk'),'refresh');
 		}}
 		// end masuk database
-		$data = array(	'title' 	=> 'Edit Produk:	'.$produk->nama_produk ,
+		$data = array(	'title' 	=> 'Edit Produk' ,
 						'kategori' 	=> $kategori,
 						'produk'	=> $produk,
-						'site'	=> $site,
 						'isi' 		=> 'admin/produk/edit'
 						);	
 		$this->load->view('admin/layout/wrapper', $data, FALSE);
@@ -294,69 +242,22 @@ class Produk extends CI_Controller {
 	// delete data
 	public function delete($id_produk)
 	{
-		// proses hapus gambar
-		$produk =	$this->produk_model->detail($id_produk);
-		unlink('./assets/upload/image/'.$produk->gambar);
-		unlink('./assets/upload/image/thumbs/'.$produk->gambar); 
-		// end prosses
-		$data 	= array('id_produk' => $id_produk );
-		$this->produk_model->delete($data);
-		$this->session->set_flashdata('sukses', 'Data Berhasil Di Hapus');
-		redirect(base_url('admin/produk'),'refresh');
-	}
-
-	// delete data
-	public function delete_gambar($id_produk,$id_gambar)
-	{
-		// proses hapus gambar
-		$gambar =	$this->produk_model->detail_gambar($id_gambar);
-		unlink('./assets/upload/image/'.$gambar->gambar);
-		unlink('./assets/upload/image/thumbs/'.$gambar->gambar); 
-		// end prosses
-		$data 	= array('id_gambar' => $id_gambar );
-		$this->produk_model->delete_gambar($data);
-		$this->session->set_flashdata('sukses', 'Gambar Berhasil Di Hapus');
-		redirect(base_url('admin/produk/gambar/'.$id_produk),'refresh');
-	}
-
-	public function barcode_detail($kode_produk)
-	{
-		$produk = $this->produk_model->barcode_detail($kode_produk);
-		$data = array(	'title' 	=> 'Barcode per produk', 
-						'produk'	=> $produk 
-							);
-		$this->load->view('admin/produk/barcode', $data, FALSE);
-	}
-
-	public function gambar_barcode_detail($kode_produk)
-	{
-		$this->zend->load('Zend/Barcode');
-		Zend_Barcode::render('code128', 'image', array('text'=>$kode_produk));
-	}
-
-	public function barcode()
-	{
-		$produk = $this->produk_model->barcode_semua();
-		$data = array(	'title' => 'Barcode semua produk', 
-						'produk' => $produk 
-							);
-		$this->load->view('admin/produk/barcode_semua', $data, FALSE);
-	}
-
-	public function report_barang()
-	{
-		$modal = $this->produk_model->listing();
-
-		$terjual = $this->produk_model->listing_report();
-
-		// print_r($terjual);
+		$dataPro 	= array('id_produk' => $id_produk);
+		$produk 	= sendCurl('/product/detail','POST', $dataPro);
+		$produk 	= json_decode($produk);
+		$produk 	= $produk->data[0];
+		// unlink('./assets/upload/image/'.$produk->image);
+		$data 		= array('id_produk' => $id_produk );
+		// print_r($data);
 		// die();
-
-		$data = array(	'title' 	=> 'Report Produk' ,
-						'modal' 	=> $modal,
-						'terjual' 	=> $terjual
-						);	
-		$this->load->view('admin/report/produk', $data, FALSE);
+		$sendApi 	= sendCurl('/product/delete','POST',$data);
+		$sendApi 	= json_decode($sendApi);
+		if ($sendApi->status == '00') {
+			$this->session->set_flashdata('sukses', 'Data Berhasil Di Hapus');
+		}else{
+			$this->session->set_flashdata('warning', 'Hapus data Gagal');
+		}
+		redirect(base_url('admin/produk'),'refresh');
 	}
 }
 

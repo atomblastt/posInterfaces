@@ -54,8 +54,23 @@
         <script src="<?=base_url('assets/template/dist/')?>assets/js/app.min.js"></script>
         
         <script>
+          function formatRupiah(angka, prefix){
+            var number_string = angka.replace(/[^,\d]/g, '').toString(),
+            split   		= number_string.split(','),
+            sisa     		= split[0].length % 3,
+            rupiah     		= split[0].substr(0, sisa),
+            ribuan     		= split[0].substr(sisa).match(/\d{3}/gi);
+      
+            if(ribuan){
+              separator = sisa ? '.' : '';
+              rupiah += separator + ribuan.join('.');
+            }
+      
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return prefix == undefined ? rupiah : (rupiah ? 'IDR ' + rupiah : '');
+          }
           $(document).ready(function () {
-            basePrefURL = '<?php echo base_url('admin/kategori/edit') ?>'
+            basePrefURLCat = '<?php echo base_url('admin/kategori/edit') ?>'
             
             $('#example').DataTable({
             lengthMenu: [[5, 10, 100], [20, 50, 100]],
@@ -88,7 +103,7 @@
                 orderable: false,
                 render: function(data, type, row) {
                   var strAction = `
-                  <a href="`+basePrefURL+`/`+data+`" class="btn btn-success btn-sm"><b>Edit</b></a>
+                  <a href="`+basePrefURLCat+`/`+data+`" class="btn btn-success btn-sm"><b>Edit</b></a>
                   <button class="btn btn-danger btn-sm" id="deleteCategory" onclick="deleteCategory(`+data+`)"><b>Hapus</b></button>
                     `;
                   return strAction;
@@ -101,46 +116,141 @@
               [1, 'desc']
             ]
           });
+
+            basePrefURLPro = '<?php echo base_url('admin/produk/edit') ?>'
+            
+            $('.product').DataTable({
+            lengthMenu: [[5, 10, 100], [20, 50, 100]],
+            processing: true,
+            serverSide: true,
+            ajax: {
+              url: '<?php echo base_url('admin/produk/ajaxAllData') ?>',
+              type: 'POST'
+            },
+            columnDefs: [
+              {"className": "dt-center", "targets": "_all"},
+              { "defaultContent": "-", "targets": "_all" }
+            ],
+            columns: [
+              {
+                  data: "number",
+                  render: function (data, type, row, meta) {
+                      return meta.row + meta.settings._iDisplayStart + 1;
+                  },
+                  width: "5%"
+              },
+              {
+                data: 'product_name',
+                name: 'data.product_name',
+                width: "15%"
+              },
+              {
+                data: 'product_code',
+                name: 'data.product_code',
+                width: "15%"
+              },
+              {
+                data: 'price',
+                name: 'data.price',
+                // render: function(data, type, row) {
+                //   // console.log(data);
+                //   var num = formatRupiah(data, 'IDR');
+                //   return num;
+                // },
+                width: "15%"
+              },
+              {
+                data: 'stock',
+                name: 'data.stock',
+                width: "5%"
+              },
+              {
+                data: 'description',
+                name: 'data.description',
+                width: "25%"
+              },
+              {
+                data: 'product_id',
+                name: 'data.product_id',
+                searchable: false,
+                orderable: false,
+                render: function(data, type, row) {
+                  var strAction = `
+                  <a href="`+basePrefURLPro+`/`+data+`" class="btn btn-success btn-sm"><b>Edit</b></a>
+                  <button class="btn btn-danger btn-sm" id="deleteProduct" onclick="deleteProduct(`+data+`)"><b>Hapus</b></button>
+                    `;
+                  return strAction;
+                },
+                width: "20%"
+              }
+              
+            ],
+            order: [
+              [1, 'desc']
+            ]
+          }).columns.adjust().responsive.recalc();
+
         });
 
-          <?php if ($this->session->flashdata('sukses')) { ?>
-            setTimeout(() => {
-              Swal.fire({
-                icon: 'success',
-                text: '<?php echo $this->session->flashdata('sukses'); ?>',
-              });
-            },1000);
-          <?php } ?>
+        function deleteCategory(id) {
+          basePrefURLDelete = '<?php echo base_url('admin/kategori/delete') ?>'
+          Swal.fire({
+            title: '<strong>Yakin ingin menghapus ?</strong>',
+            icon: 'warning',
+            showCloseButton: true,
+            showCancelButton: true,
+            focusConfirm: false,
+            reverseButtons: true,
+            focusCancel: true,
+            confirmButtonColor: '#e1c811',
+            cancelButtonText:`Cancel`,
+            confirmButtonText:`Delete`
+          }).then((result) => {
+            if (result.value) {
+              window.location.href = basePrefURLDelete+`/`+id
+            }
+          }); 
+        };
 
-          <?php if ($this->session->flashdata('warning')) { ?>
-            setTimeout(() => {
-              Swal.fire({
-                icon: 'error',
-                text: '<?php echo $this->session->flashdata('warning'); ?>'
-              });
-            },1000);
-          <?php } ?>
+        function deleteProduct(id) {
+          basePrefURLDelete = '<?php echo base_url('admin/produk/delete') ?>'
+          Swal.fire({
+            title: '<strong>Yakin ingin menghapus ?</strong>',
+            icon: 'warning',
+            showCloseButton: true,
+            showCancelButton: true,
+            focusConfirm: false,
+            reverseButtons: true,
+            focusCancel: true,
+            confirmButtonColor: '#e1c811',
+            cancelButtonText:`Cancel`,
+            confirmButtonText:`Delete`
+          }).then((result) => {
+            if (result.value) {
+              window.location.href = basePrefURLDelete+`/`+id
+            }
+          }); 
+        };
 
-          function deleteCategory(id) {
-            basePrefURLDelete = '<?php echo base_url('admin/kategori/delete') ?>'
+        <?php if ($this->session->flashdata('sukses')) { ?>
+          setTimeout(() => {
             Swal.fire({
-              title: '<strong>Yakin ingin menghapus ?</strong>',
-              icon: 'warning',
-              showCloseButton: true,
-              showCancelButton: true,
-              focusConfirm: false,
-              reverseButtons: true,
-              focusCancel: true,
-              confirmButtonColor: '#e1c811',
-              cancelButtonText:`Cancel`,
-              confirmButtonText:`Delete`
-            }).then((result) => {
-              if (result.value) {
-                window.location.href = basePrefURLDelete+`/`+id
-              }
-            }); 
-          };
+              icon: 'success',
+              text: '<?php echo $this->session->flashdata('sukses'); ?>',
+            });
+          },1000);
+        <?php } ?>
+
+        <?php if ($this->session->flashdata('warning')) { ?>
+          setTimeout(() => {
+            Swal.fire({
+              icon: 'error',
+              text: '<?php echo $this->session->flashdata('warning'); ?>'
+            });
+          },1000);
+        <?php } ?>
+
+          
         </script>
-        
-    </body>
-</html>
+
+

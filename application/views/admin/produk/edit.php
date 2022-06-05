@@ -1,115 +1,123 @@
-<?php
+<div class="row">
+  <div class="col-12">
+      <div class="card">
+          <div class="card-body">
+              <!-- <h4 class="header-title"><?= $title ?></h4> -->
 
- //error upload
-if(isset($error)){
-  echo '<p class="alert alert-warning">';
-  echo $error;
-  echo '</p>';
-}
+              <script type="text/javascript">
+              function kategori(){
+              var x=document.getElementById('cbkategori').value;
+              document.getElementById('kode_produk').value=x;  
+              }
+              </script>
+              <?php
 
-  // Notifikasi Error
-echo validation_errors('<div class="alert alert-warning">','</div>');
+              //error upload
+              if(isset($error)){
+                echo '<p class="alert alert-warning">';
+                echo $error;
+                echo '</p>';
+              }
 
-// form open
-echo form_open_multipart(base_url('admin/produk/edit/' .$produk->id_produk),' class="form-horizontal"');
-?>
+                // Notifikasi Error
+              echo validation_errors('<div class="alert alert-warning">','</div>');
 
-<div class="form-group form-group-lg">
-  <label class="col-md-2 control-label">Nama Produk</label>
-  <div class="col-md-8">
-    <input type="text" class="form-control" placeholder="Nama Produk" name="nama_produk" value="<?php echo $produk->nama_produk ?>" required>
+              // form open
+              echo form_open_multipart(base_url('admin/produk/edit/').$produk->product_id,' class="form-horizontal"');
+              ?>
+
+                  <div class="form-group form-group-lg">
+                    <label class="col-md-12 control-label">Nama Produk</label>
+                    <div class="col-md-12">
+                      <input type="text" class="form-control" placeholder="Nama Produk" name="nama_produk" value="<?php echo $produk->product_name ?>" required>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Kategori Produk</label>
+                    <div class="col-md-12">
+                      <select class="form-control" data-toggle="select2" data-width="100%" name="id_kategori">
+                        <option>Pilih</option>
+                        <?php foreach ($kategori as $key) : ?>
+                            <option value="<?= $key->category_id ?>" <?php if($key->category_id == $produk->category_id) {echo 'selected';} ?>><?= $key->category_name ?></option>
+                          <?php endforeach; ?>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Kode Produk</label>
+                    <div class="col-md-12">
+                      <input type="text" class="form-control" placeholder="Kode Produk" name="kode_produk" id="kode_produk" value="<?php echo $produk->product_code ?>" required>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Harga Produk</label>
+                    <div class="col-md-12">
+                      <input type="number" class="form-control" placeholder="Harga" name="harga" value="<?php echo $produk->price ?>" required>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Stok Produk</label>
+                    <div class="col-md-12">
+                      <input type="number" class="form-control" placeholder="Stok Produk" name="stok" value="<?php echo $produk->stock ?>" required>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Keterangan Produk</label>
+                    <div class="col-md-12">
+                      <textarea name="keterangan" class="form-control" placeholder="Keterangan" id="snow-editor" style="height: 100px;"><?php echo $produk->description ?></textarea>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Uplaod Gambar Produk</label>
+                    <div class="col-md-12">
+                      <!-- <input type="file" name="gambar" class="form-control" required="required"> -->
+                      <input type="file" id="fileuploader" data-plugins="dropify" data-default-file="<?= base_url('assets/upload/image/').$produk->image?>" data-max-file-size="1M" name="gambar" class="form-control" data-allowed-file-extensions="jpg jpeg png" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-12 control-label">Status Produk</label>
+                    <div class="col-md-2">
+                      <select name="status_produk" class="form-control">
+                        <option value="Publish">Publikasikan</option>
+                        <option value="Draft">Simpan Sebagai Draft</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-md-12 control-label"></label>
+                    <div class="col-md-12">
+                      <button class="btn btn-success btn-lg" name="submit" type="submit">
+                        <i class="fa fa-save"></i>Simpan
+                      </button>
+                      <button class="btn btn-info btn-lg" name="reset" type="reset">
+                        <i class="fa fa-times"></i>Reset
+                      </button>
+                    </div>
+                  </div>
+
+              <?php echo form_close(); ?>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="form-group">
-  <label class="col-md-2 control-label">Kode Produk</label>
-  <div class="col-md-5">
-    <input type="text" class="form-control" placeholder="Kode Produk" name="kode_produk" value="<?php echo $produk->kode_produk ?>" required>
-  </div>
-</div>
+<script>
 
-<div class="form-group">
-  <label class="col-md-2 control-label">Kategori Produk</label>
-  <div class="col-md-2">
-   <select name="id.kategori" class="form-control">
-    <?php foreach ($kategori as $kategori) { ?>
-    <option value="<?php echo $kategori->id_kategori ?>" <?php if($produk->id_kategori==$kategori->id_kategori) { echo "selected"; } ?>>
-        <?php echo $kategori->nama_kategori ?>
-        </option>
-    <?php } ?>
-   </select>
-  </div>
-</div>
+$('.dropify').dropify({
+    messages: {
+        'default': 'Drag and drop a file here or click',
+        'replace': 'Drag and drop or click to replace',
+        'remove':  'Remove',
+        'error':   'Ooops, something wrong happended.'
+    }
+});
 
-<div class="form-group">
-  <label class="col-md-2 control-label">Harga Produk</label>
-  <div class="col-md-5">
-    <input type="number" class="form-control" placeholder="Harga" name="harga" value="<?php echo $produk->harga ?>" required>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Stok Produk</label>
-  <div class="col-md-5">
-    <input type="number" class="form-control" placeholder="Stok Produk" name="stok" value="<?php echo $produk->stok ?>" required>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Berat Produk</label>
-  <div class="col-md-5">
-    <input type="text" class="form-control" placeholder="Berat Produk" name="berat" value="<?php echo $produk->berat ?>" required>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Ukuran Produk</label>
-  <div class="col-md-5">
-    <input type="text" class="form-control" placeholder="Ukuran Produk" name="ukuran" value="<?php echo $produk->ukuran ?>" required>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Keterangan Produk</label>
-  <div class="col-md-10">
-    <textarea name="keterangan" class="form-control" placeholder="Keterangan" id="editor"><?php echo $produk->keterangan ?></textarea>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Keyword (Untuk SEO Google)</label>
-  <div class="col-md-10">
-    <textarea name="keywords" class="form-control" placeholder="Keyword (Untuk SEO Google)"><?php echo $produk->keywords?></textarea>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Upload Gambar Produk</label>
-  <div class="col-md-10">
-    <input type="file" name="gambar" class="form-control" value="<?php echo $produk->gambar ?>">
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label">Status Produk</label>
-  <div class="col-md-2">
-    <select name="status_produk" class="form-control">
-      <option value="Publish">Publikasikan</option>
-      <option value="Draft" <?php if($produk->status_produk=="Draft") { echo "selected"; } ?>>Simpan Sebagai Draft</option>
-    </select>
-  </div>
-</div>
-
-<div class="form-group">
-  <label class="col-md-2 control-label"></label>
-  <div class="col-md-5">
-  	<button class="btn btn-success btn-lg" name="submit" type="submit">
-  		<i class="fa fa-save"></i>Simpan
-  	</button>
-  	<button class="btn btn-info btn-lg" name="reset" type="reset">
-  		<i class="fa fa-times"></i>Reset
-  	</button>
-  </div>
-</div>
-
-<?php echo form_close(); ?>
+</script>

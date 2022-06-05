@@ -36,22 +36,12 @@
                   <div class="form-group">
                     <label class="col-md-12 control-label">Kategori Produk</label>
                     <div class="col-md-12">
-                      <select class="form-control" data-toggle="select2" data-width="100%" name="kategori">
+                      <select class="form-control" data-toggle="select2" data-width="100%" name="id_kategori">
                         <option>Pilih</option>
-                          <option value="AK">Alaska</option>
-                          <option value="HI">Hawaii</option>
-                          <option value="CA">California</option>
-                          <option value="NV">Nevada</option>
-                          <option value="OR">Oregon</option>
-                          <option value="WA">Washington</option>
+                        <?php foreach ($kategori as $key) : ?>
+                            <option value="<?= $key->category_id ?>"><?= $key->category_name ?></option>
+                          <?php endforeach; ?>
                       </select>
-                    <!-- <select name="id.kategori" class="form-control" id="cbkategori" onchange="kategori()">
-                      <?php foreach ($kategori as $kategori) { ?>
-                      <option value="<?php echo $kategori->id_kategori ?>">
-                          <?php echo $kategori->nama_kategori ?>
-                          </option>
-                      <?php } ?>
-                    </select> -->
                     </div>
                   </div>
 

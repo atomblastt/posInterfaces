@@ -36,6 +36,7 @@
 
           <!-- icons -->
           <link href="<?=base_url('assets/template/dist/')?>assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+          
 
           <style>
                .left-side-menu, .logo-box {
